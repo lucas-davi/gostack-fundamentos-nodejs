@@ -27,25 +27,31 @@ class TransactionsRepository {
   }
 
   public getBalance(): Balance {
-    const sumIncome = this.transactions.reduce((accumulator, element) => {
-      return element.type === 'income'
-        ? accumulator + element.value
-        : accumulator + 0;
-    }, 0);
+    const { income, outcome } = this.transactions.reduce(
+      (accumulator: Balance, transaction: Transaction) => {
+        switch (transaction.type) {
+          case 'income':
+            accumulator.income += transaction.value;
+            break;
+          case 'outcome':
+            accumulator.outcome += transaction.value;
+            break;
+          default:
+            break;
+        }
 
-    const sumOutcome = this.transactions.reduce((accumulator, element) => {
-      return element.type === 'outcome'
-        ? accumulator + element.value
-        : accumulator + 0;
-    }, 0);
+        return accumulator;
+      },
+      {
+        income: 0,
+        outcome: 0,
+        total: 0,
+      },
+    );
 
-    const balance = {
-      income: sumIncome,
-      outcome: sumOutcome,
-      total: sumIncome - sumOutcome,
-    };
+    const total = income - outcome;
 
-    return balance;
+    return { income, outcome, total };
   }
 
   public create({ title, value, type }: CreateTransactionDTO): Transaction {
